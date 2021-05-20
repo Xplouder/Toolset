@@ -3,6 +3,6 @@
 
 ## Usage:
 
-`ansible-playbook -bK playbooks/setup.yaml` 
+`ansible-playbook playbooks/setup.yaml` 
 
-if need privilege escalation: `ansible-playbook -bK setup.yaml` 
+if need privilege escalation: `ansible-playbook -bK playbooks/setup.yaml` 

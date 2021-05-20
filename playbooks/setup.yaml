@@ -61,6 +61,12 @@
           - kind-bin
           - lens-bin
 
+    - name: install python packages
+      become: false
+      pip:
+        name:
+          - molecule[lint]
+
     - name: set oh-my-zsh config
       copy:
         src: ../files/.zshrc
