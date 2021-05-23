@@ -1,0 +1,12 @@
+- name: install YAY (1/2)
+  command: pacman -Sy --noconfirm --needed git base-devel
+  changed_when: false
+
+- name: install YAY (2/2)
+  become: false
+  ansible.builtin.shell: |
+    git clone https://aur.archlinux.org/yay-bin.git /tmp/yay-bin
+    cd /tmp/yay-bin
+    makepkg -si --noconfirm
+    rm -rf /tmp/yay-bin
+  changed_when: false

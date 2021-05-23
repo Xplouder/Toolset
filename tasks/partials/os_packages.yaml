@@ -1,0 +1,9 @@
+- name: install OS packages
+  package:
+    name: "{{ arch_packages }}"
+    state: present
+
+- name: install AUR packages
+  become: false
+  command: "yay -S --noconfirm {{ aur_packages | join(' ') }}"
+  changed_when: false

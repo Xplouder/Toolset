@@ -1,0 +1,7 @@
+- name: set oh-my-zsh config
+  copy:
+    src: files/.zshrc
+    dest: "{{ lookup('env','HOME') }}/.zshrc"
+    owner: "{{ lookup('env','USER') }}"
+    group: "{{ lookup('env','USER') }}"
+    mode: '0644'

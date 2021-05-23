@@ -2,8 +2,11 @@
 
 set -eux
 
-python -m pip install --user ansible
+python -m pip install --user ansible docker
 
-ansible-galaxy install -f -r requirements.yaml
+export ANSIBLE_LOAD_CALLBACK_PLUGINS=1
+export ANSIBLE_STDOUT_CALLBACK=yaml
+current_dir_name="$(dirname "$(pwd)")"
+export ANSIBLE_ROLES_PATH=$current_dir_name
 
-ansible-playbook -bK playbooks/setup.yaml
+ansible localhost -bK -c local -m include_role -a name="$(basename "$(pwd)")"
