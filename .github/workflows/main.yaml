@@ -1,0 +1,8 @@
+name: Ansible Molecule
+on: [ push ]
+jobs:
+  molecule:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ansible Molecule
+        uses: gofrolist/molecule-action@v2
