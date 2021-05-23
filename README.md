@@ -53,4 +53,4 @@ MIT
 TODO
 -------
 
-- correct oh-my-zh
+- correct `oh-my-zh` setup
