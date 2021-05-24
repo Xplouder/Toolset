@@ -5,5 +5,5 @@
 
 - name: install AUR packages
   become: false
-  command: "yay -S --noconfirm {{ aur_packages | join(' ') }}"
+  command: "yay -S --needed --noconfirm {{ aur_packages | join(' ') }}"
   changed_when: false

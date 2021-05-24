@@ -1,0 +1,13 @@
+- name: vim gruvbox install
+  become: false
+  ansible.builtin.git:
+    repo: 'https://github.com/morhetz/gruvbox.git'
+    dest: ~/.vim/pack/default/start/gruvbox
+    version: v2.0.0
+
+- name: update .vimrc
+  become: false
+  ansible.builtin.copy:
+    src: .vimrc
+    dest: ~/.vimrc
+    mode: '0644'

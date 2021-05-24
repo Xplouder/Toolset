@@ -41,6 +41,7 @@ arch_packages:
 
 aur_packages:
   # DEV Tools
+  - jetbrains-toolbox
   - terraformer-bin
   - kind-bin
   - lens-bin
@@ -51,9 +52,12 @@ aur_packages:
   # OS Tools
   - drawio-desktop-bin
   - caffeine-ng
+  - shortwave
   # for some reason is causing problems
   #  - spotify
   - ttf-tahoma
+  - ttf-jetbrains-mono
+  - nerd-fonts-jetbrains-mono
   # - oh-my-zsh
   # - zsh-autosuggestions
   # - zsh-theme-powerlevel10k

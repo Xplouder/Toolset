@@ -6,5 +6,6 @@
     - partials/os_packages.yaml
     - partials/python_packages.yaml
     - partials/oh-my-zsh.yaml
+    - partials/vim_customizations.yaml
     - partials/os_settings.yaml
     - partials/cleanup.yaml

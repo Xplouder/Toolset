@@ -3,3 +3,10 @@
     name: vm.swappiness
     value: '15'
     state: present
+
+- name: update .bashrc
+  become: false
+  ansible.builtin.copy:
+    src: .bashrc
+    dest: ~/.bashrc
+    mode: '0644'
