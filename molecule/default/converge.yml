@@ -28,6 +28,6 @@
   tasks:
     - name: "Include toolset"
       include_role:
-        name: "toolset"
+        name: "xplouder.toolset"
       vars:
         ansible_user: "{{ test_user }}"
