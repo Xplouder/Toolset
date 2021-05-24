@@ -40,6 +40,7 @@ jobs:
     runs-on: ubuntu-latest
 
 # Disabled until the Role supports more distros beside Arch (1)
+#
 #    strategy:
 #      matrix:
 #        distro:
