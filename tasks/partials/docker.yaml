@@ -1,0 +1,22 @@
+- name: install docker and docker-compose
+  package:
+    name:
+      - docker
+      - docker-compose
+
+- name: start docker service
+  ansible.builtin.service:
+    name: docker
+    enabled: yes
+    state: started
+
+- name: ensure group "docker" exists
+  ansible.builtin.group:
+    name: docker
+    state: present
+
+- name: append "docker" group
+  ansible.builtin.user:
+    name: "{{ lookup('env','USER') }}"
+    groups: docker
+    append: yes

@@ -1,0 +1,10 @@
+- include_tasks: "{{ item }}"
+  loop:
+    - partials/sublime.yaml
+    - partials/docker.yaml
+    - partials/yay.yaml
+    - partials/os_packages.yaml
+    - partials/python_packages.yaml
+    - partials/oh-my-zsh.yaml
+    - partials/os_settings.yaml
+    - partials/cleanup.yaml

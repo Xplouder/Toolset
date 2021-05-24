@@ -1,0 +1,62 @@
+arch_packages:
+  # DEV Tools
+  - git
+  - go
+  - python
+  - python-pip
+  - sed
+  - jq
+  - vim
+  - dnsutils
+  - strace
+  - mysql-workbench
+  - kubectl
+  - kubectx
+  - helm
+  - terraform
+  - k9s
+  # OS Tools
+  - keepassxc
+  - seahorse
+  - gparted
+  - htop
+  - blueman
+  - powertop
+  - tilix
+  - redshift
+  # - oh-my-zsh
+  # - zsh-autosuggestions
+  # - zsh-theme-powerlevel10k
+  # - spotify
+  - baobab
+  - gparted
+  - evince
+  - gnome-disk-utility
+  - gnome-calendar
+  - gnome-font-viewer
+  - simple-scan
+  - noto-fonts-emoji
+  # Chat
+  - discord
+
+aur_packages:
+  # DEV Tools
+  - terraformer-bin
+  - kind-bin
+  - lens-bin
+  # Chat
+  - slack-desktop
+  - teams
+  - whatsapp-for-linux
+  # OS Tools
+  - drawio-desktop-bin
+  - caffeine-ng
+  # for some reason is causing problems
+  #  - spotify
+  - ttf-tahoma
+  # - oh-my-zsh
+  # - zsh-autosuggestions
+  # - zsh-theme-powerlevel10k
+
+python_packages:
+  - molecule[lint,docker]

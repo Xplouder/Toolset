@@ -1,0 +1,7 @@
+- name: clean unused packages cache
+  ansible.builtin.command: pacman -Sc --noconfirm
+  changed_when: false
+
+- name: remove unused packages
+  ansible.builtin.command: pacman -Qtdq --noconfirm
+  changed_when: false
