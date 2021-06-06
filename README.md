@@ -1,7 +1,15 @@
+<p align="center">
+  <img src=".github/logo.png">
+</p>
+
+<p align="center">
+  <a href="https://github.com/Xplouder/Toolset/actions"><img alt="CI" src="https://github.com/Xplouder/Toolset/workflows/CI/badge.svg"></a>
+</p>
+
 Toolset
 =========
 
-Just a quick way to install the tools, cli and gui, for daily basis in an unix distribution.
+Just a quick way to install the tools (cli and gui) and dotfiles for daily basis in an unix distribution.
 
 Requirements
 ------------
