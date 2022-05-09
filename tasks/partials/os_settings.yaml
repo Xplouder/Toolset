@@ -10,3 +10,17 @@
     src: .bashrc
     dest: ~/.bashrc
     mode: '0644'
+
+- name: update .bashrc
+  become: false
+  ansible.builtin.copy:
+    src: .bashrc
+    dest: ~/.bashrc
+    mode: '0644'
+
+- name: update .zshrc
+  become: false
+  ansible.builtin.copy:
+    src: .zshrc
+    dest: ~/.zshrc
+    mode: '0644'

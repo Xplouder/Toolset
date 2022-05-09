@@ -62,3 +62,7 @@ TODO
 -------
 
 - correct `oh-my-zh` setup
+- add a variable to indicate if the computer have a SSD, if so, install and enable `fstrim` service and timer
+    - `systemctl enable fstrim.timer`
+    - `systemctl enable fstrim.service`
+    - `systemctl start fstrim.service`
