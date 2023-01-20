@@ -15,6 +15,7 @@ arch_packages:
   - mysql-workbench
   - kubectl
   - kubectx
+  - kubie
   - helm
   - terraform
   - k9s
@@ -32,6 +33,7 @@ arch_packages:
   - bleachbit             # temporary files cleaner
   - system-config-printer # cups printer gui manager
   - tldr                  # man pages with practical examples
+  - parcellite            # clipboard manager
   - oh-my-zsh
   - zsh-autosuggestions
   - zsh-completions
