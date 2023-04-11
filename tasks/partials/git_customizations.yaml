@@ -1,0 +1,6 @@
+- name: add git "cleanup" alias
+  become: false
+  community.general.git_config:
+    name: alias.cleanup
+    scope: global
+    value: !git branch | grep -E -v '(\\^\\*|master|main|dev)' | xargs git branch -D

@@ -9,3 +9,4 @@
     - partials/vim_customizations.yaml
     - partials/os_settings.yaml
     - partials/cleanup.yaml
+    - partials/git_customizations.yaml
