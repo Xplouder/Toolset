@@ -1,7 +1,29 @@
-- name: clean unused packages cache
-  ansible.builtin.command: pacman -Sc --noconfirm
+- name: Clean package cache
+  shell: |
+    cache_size_before=$(du -sh /var/cache/pacman/pkg/ | cut -f1)
+    pacman -Sc --noconfirm
+    cache_size_after=$(du -sh /var/cache/pacman/pkg/ | cut -f1)
+    echo "Cache cleaned: $cache_size_before -> $cache_size_after"
+  register: cache_cleanup
+  changed_when: true
+
+- name: Find orphaned packages
+  shell: pacman -Qtdq
+  register: orphaned_packages
+  failed_when: false
   changed_when: false
 
-- name: remove unused packages
-  ansible.builtin.command: pacman -Qtdq --noconfirm
-  changed_when: false
+- name: Remove orphaned packages
+  shell: pacman -Rns --noconfirm {{ orphaned_packages.stdout_lines | join(' ') }}
+  when: 
+    - orphaned_packages.rc == 0
+    - orphaned_packages.stdout_lines | length > 0
+  register: orphan_removal
+  changed_when: orphan_removal.rc == 0
+
+- name: Display cleanup summary
+  debug:
+    msg: |
+      Cleanup completed:
+      - {{ cache_cleanup.stdout if cache_cleanup is defined else 'Cache cleanup skipped' }}
+      - Orphaned packages removed: {{ orphaned_packages.stdout_lines | length if orphaned_packages.stdout_lines is defined else 0 }}

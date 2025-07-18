@@ -1,6 +1,35 @@
-- name: add git "cleanup" alias
+- name: Check if git is installed
+  command: which git
+  register: git_check
+  failed_when: false
+  changed_when: false
   become: false
+
+- name: Add git "cleanup" alias (safer version)
   community.general.git_config:
     name: alias.cleanup
     scope: global
-    value: !git branch | grep -E -v '(\\^\\*|master|main|dev)' | xargs git branch -D
+    value: "!git branch | grep -E -v '(^\\*|master|main|dev|develop)' | xargs -r git branch -d"
+  become: false
+  when: git_check.rc == 0
+
+- name: Add useful git aliases
+  community.general.git_config:
+    name: "{{ item.name }}"
+    scope: global
+    value: "{{ item.value }}"
+  become: false
+  when: git_check.rc == 0
+  loop:
+    - name: alias.st
+      value: status
+    - name: alias.co
+      value: checkout
+    - name: alias.br
+      value: branch
+    - name: alias.unstage
+      value: reset HEAD --
+    - name: alias.last
+      value: log -1 HEAD
+    - name: alias.visual
+      value: !gitk

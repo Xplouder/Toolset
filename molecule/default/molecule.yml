@@ -12,11 +12,25 @@ platforms:
     pull: true
     volumes:
       - "/sys/fs/cgroup:/sys/fs/cgroup:ro"
+    env:
+      ANSIBLE_USER: molecule
+      HOME: /home/molecule
 provisioner:
   name: ansible
+  config_options:
+    defaults:
+      callbacks_enabled: profile_tasks
+  inventory:
+    host_vars:
+      archlinux:
+        # Test with minimal configuration
+        toolset_install_aur_packages: false
+        toolset_configure_docker: true
+        toolset_install_gui_tools: false
+        toolset_backup_existing_configs: false
 verifier:
   name: ansible
 lint: |
   set -e
   yamllint .
-#  ansible-lint .
+  ansible-lint . || true

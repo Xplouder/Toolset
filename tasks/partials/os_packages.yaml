@@ -1,9 +1,31 @@
-- name: install OS packages
+- name: Install OS packages
   package:
     name: "{{ arch_packages }}"
     state: present
+  tags: arch_packages
 
-- name: install AUR packages
-  become: false
-  command: "yay -S --needed --noconfirm {{ aur_packages | join(' ') }}"
+- name: Check if yay is available
+  command: which yay
+  register: yay_check
+  failed_when: false
   changed_when: false
+  become: false
+
+- name: Install AUR packages
+  shell: |
+    installed=$(yay -Qq {{ item }} 2>/dev/null || echo "not_installed")
+    if [ "$installed" = "not_installed" ]; then
+      yay -S --needed --noconfirm {{ item }}
+      echo "installed"
+    else
+      echo "already_installed"
+    fi
+  register: aur_install_result
+  changed_when: aur_install_result.stdout == "installed"
+  failed_when: aur_install_result.rc != 0
+  become: false
+  loop: "{{ aur_packages }}"
+  when: 
+    - toolset_install_aur_packages | bool
+    - yay_check.rc == 0
+  tags: aur_packages

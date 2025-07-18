@@ -1,3 +1,32 @@
-- hosts: localhost
-  roles:
-    - toolset
+---
+- name: Test toolset role
+  hosts: localhost
+  connection: local
+  become: false
+  
+  pre_tasks:
+    - name: Ensure test environment is ready
+      debug:
+        msg: |
+          Starting toolset role tests
+          User: {{ ansible_user_id }}
+          Home: {{ ansible_env.HOME }}
+          Distribution: {{ ansible_distribution }}
+
+  tasks:
+    - name: Include toolset role
+      include_role:
+        name: "{{ playbook_dir | dirname | basename }}"
+      vars:
+        # Test with safe defaults
+        toolset_install_aur_packages: false
+        toolset_configure_docker: true
+        toolset_backup_existing_configs: true
+
+  post_tasks:
+    - name: Run verification tests
+      include_tasks: verify_installation.yml
+      
+    - name: Test summary
+      debug:
+        msg: "Toolset role test completed successfully"

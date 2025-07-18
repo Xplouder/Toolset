@@ -1,3 +1,14 @@
+# Configuration options
+toolset_backup_existing_configs: true
+toolset_install_aur_packages: true
+toolset_configure_docker: true
+toolset_install_dev_tools: true
+toolset_install_gui_tools: true
+
+# Supported distributions
+toolset_supported_distributions:
+  - "Archlinux"
+
 arch_packages:
   # DEV Tools
   - android-tools

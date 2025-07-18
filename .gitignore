@@ -1,2 +1,7 @@
 .idea
 .cache
+.venv/
+__pycache__/
+*.pyc
+.molecule/
+test_report.md

@@ -1,7 +1,31 @@
-- name: set oh-my-zsh config
+- name: Get user home directory
+  ansible.builtin.set_fact:
+    user_home: "{{ ansible_env.HOME }}"
+    current_user: "{{ ansible_user_id }}"
+
+- name: Check if .zshrc already exists
+  stat:
+    path: "{{ user_home }}/.zshrc"
+  register: existing_zshrc
+
+- name: Backup existing .zshrc
+  copy:
+    src: "{{ user_home }}/.zshrc"
+    dest: "{{ user_home }}/.zshrc.backup.{{ ansible_date_time.epoch }}"
+    remote_src: yes
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
+    mode: '0644'
+  when: 
+    - existing_zshrc.stat.exists
+    - toolset_backup_existing_configs | bool
+
+- name: Install Oh My Zsh configuration
   copy:
     src: files/.zshrc
-    dest: "{{ lookup('env','HOME') }}/.zshrc"
-    owner: "{{ lookup('env','USER') }}"
-    group: "{{ lookup('env','USER') }}"
+    dest: "{{ user_home }}/.zshrc"
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
     mode: '0644'
+    backup: "{{ toolset_backup_existing_configs | bool }}"
+  become: false

@@ -1,26 +1,31 @@
-- name: set swapiness value
+- name: Set swappiness value for better performance
   sysctl:
     name: vm.swappiness
     value: '15'
     state: present
+    reload: yes
 
-- name: update .bashrc
-  become: false
-  ansible.builtin.copy:
-    src: .bashrc
-    dest: ~/.bashrc
-    mode: '0644'
+- name: Get user home directory
+  ansible.builtin.set_fact:
+    user_home: "{{ ansible_env.HOME }}"
+    current_user: "{{ ansible_user_id }}"
 
-- name: update .bashrc
-  become: false
-  ansible.builtin.copy:
-    src: .bashrc
-    dest: ~/.bashrc
+- name: Install bashrc configuration
+  copy:
+    src: files/.bashrc
+    dest: "{{ user_home }}/.bashrc"
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
     mode: '0644'
+    backup: "{{ toolset_backup_existing_configs | bool }}"
+  become: false
 
-- name: update .zshrc
-  become: false
-  ansible.builtin.copy:
-    src: .zshrc
-    dest: ~/.zshrc
+- name: Install powerlevel10k configuration
+  copy:
+    src: files/.p10k.zsh
+    dest: "{{ user_home }}/.p10k.zsh"
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
     mode: '0644'
+    backup: "{{ toolset_backup_existing_configs | bool }}"
+  become: false

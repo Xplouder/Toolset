@@ -1,15 +1,27 @@
 ---
-- name: converge
+- name: Converge
   hosts: all
   become: true
   vars:
     test_user: molecule
 
   pre_tasks:
+    - name: Update package database
+      command: pacman -Sy
+      changed_when: false
+
+    - name: Install base packages for testing
+      package:
+        name:
+          - sudo
+          - which
+        state: present
+
     - name: Make sure we have a 'wheel' group
       group:
         name: wheel
         state: present
+
     - name: Allow 'wheel' group to have passwordless sudo
       lineinfile:
         dest: /etc/sudoers
@@ -17,17 +29,42 @@
         regexp: '^%wheel'
         line: '%wheel ALL=(ALL) NOPASSWD: ALL'
         validate: 'visudo -cf %s'
-    - name: Add sudoers users to wheel group
+
+    - name: Create test user
       user:
         name: "{{ test_user }}"
         groups: wheel
         append: yes
         state: present
         createhome: yes
+        shell: /bin/bash
+
+    - name: Set environment variables for test user
+      lineinfile:
+        path: "/home/{{ test_user }}/.bashrc"
+        line: "{{ item }}"
+        create: yes
+        owner: "{{ test_user }}"
+        group: "{{ test_user }}"
+      loop:
+        - "export USER={{ test_user }}"
+        - "export HOME=/home/{{ test_user }}"
 
   tasks:
-    - name: "Include toolset"
+    - name: Run toolset role
       include_role:
-        name: "xplouder.toolset"
+        name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
       vars:
-        ansible_user: "{{ test_user }}"
+        ansible_user_id: "{{ test_user }}"
+        ansible_env:
+          HOME: "/home/{{ test_user }}"
+          USER: "{{ test_user }}"
+
+  post_tasks:
+    - name: Display role execution summary
+      debug:
+        msg: |
+          Toolset role execution completed for testing.
+          Test user: {{ test_user }}
+          Home directory: /home/{{ test_user }}
+          Next step: verification tests

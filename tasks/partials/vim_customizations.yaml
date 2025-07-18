@@ -1,13 +1,49 @@
-- name: vim gruvbox install
+- name: Get user home directory
+  ansible.builtin.set_fact:
+    user_home: "{{ ansible_env.HOME }}"
+    current_user: "{{ ansible_user_id }}"
+
+- name: Create vim pack directory
+  file:
+    path: "{{ user_home }}/.vim/pack/default/start"
+    state: directory
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
+    mode: '0755'
   become: false
+
+- name: Install vim gruvbox theme
   ansible.builtin.git:
     repo: 'https://github.com/morhetz/gruvbox.git'
-    dest: ~/.vim/pack/default/start/gruvbox
+    dest: "{{ user_home }}/.vim/pack/default/start/gruvbox"
     version: v2.0.0
-
-- name: update .vimrc
+    force: yes
   become: false
-  ansible.builtin.copy:
-    src: .vimrc
-    dest: ~/.vimrc
+
+- name: Check if .vimrc already exists
+  stat:
+    path: "{{ user_home }}/.vimrc"
+  register: existing_vimrc
+
+- name: Backup existing .vimrc
+  copy:
+    src: "{{ user_home }}/.vimrc"
+    dest: "{{ user_home }}/.vimrc.backup.{{ ansible_date_time.epoch }}"
+    remote_src: yes
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
     mode: '0644'
+  when: 
+    - existing_vimrc.stat.exists
+    - toolset_backup_existing_configs | bool
+  become: false
+
+- name: Install vim configuration
+  copy:
+    src: files/.vimrc
+    dest: "{{ user_home }}/.vimrc"
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
+    mode: '0644'
+    backup: "{{ toolset_backup_existing_configs | bool }}"
+  become: false
