@@ -6,24 +6,31 @@
     test_user: molecule
 
   pre_tasks:
+    - name: Wait for container to be ready
+      wait_for_connection:
+        timeout: 30
+
     - name: Initialize pacman keyring
       command: pacman-key --init
       changed_when: false
+      failed_when: false
 
     - name: Populate pacman keyring
       command: pacman-key --populate archlinux
       changed_when: false
+      failed_when: false
 
     - name: Update package database
       command: pacman -Sy --noconfirm
       changed_when: false
+      retries: 3
+      delay: 5
 
     - name: Install base packages for testing
       package:
         name:
           - sudo
           - which
-          - systemd
           - base-devel
           - git
           - python

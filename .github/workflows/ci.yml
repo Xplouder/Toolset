@@ -82,18 +82,24 @@ jobs:
 
       - name: Run Molecule tests
         run: |
+          # Clean up any existing containers first
+          docker container prune -f || true
+          
           # Set timeout and run molecule test
           timeout 1800 molecule test -s ${{ matrix.scenario }} || {
             echo "Molecule test failed or timed out"
             echo "Cleaning up any remaining containers..."
             docker ps -a
-            molecule destroy -s ${{ matrix.scenario }} || true
+            docker container ls -a --filter "name=*${{ matrix.scenario }}*" --format "table {{.ID}}\t{{.Names}}\t{{.Status}}"
+            molecule destroy -s ${{ matrix.scenario }} --force || true
+            docker container prune -f || true
             exit 1
           }
         env:
           MOLECULE_NO_LOG: false
           PY_COLORS: 1
           ANSIBLE_FORCE_COLOR: 1
+          DOCKER_HOST: unix:///var/run/docker.sock
 
   integration:
     name: Integration Tests
