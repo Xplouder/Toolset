@@ -1,0 +1,35 @@
+---
+- name: Converge - Minimal Installation
+  hosts: all
+  become: true
+  vars:
+    test_user: molecule
+
+  pre_tasks:
+    - name: Update package database
+      command: pacman -Sy
+      changed_when: false
+
+    - name: Install base packages for testing
+      package:
+        name:
+          - sudo
+          - which
+        state: present
+
+    - name: Create test user
+      user:
+        name: "{{ test_user }}"
+        state: present
+        createhome: yes
+        shell: /bin/bash
+
+  tasks:
+    - name: Run toolset role with minimal configuration
+      include_role:
+        name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
+      vars:
+        ansible_user_id: "{{ test_user }}"
+        ansible_env:
+          HOME: "/home/{{ test_user }}"
+          USER: "{{ test_user }}"

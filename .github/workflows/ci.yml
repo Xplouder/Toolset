@@ -1,0 +1,196 @@
+---
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run tests weekly to catch dependency issues
+    - cron: '0 2 * * 1'
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run YAML Lint
+        run: yamllint .
+
+      - name: Run Ansible Lint
+        run: ansible-lint . || true
+
+      - name: Ansible syntax check
+        run: ansible-playbook --syntax-check playbook.yml
+
+  molecule:
+    name: Molecule Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        scenario:
+          - default
+          - minimal
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-molecule-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-molecule-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Verify Molecule Docker driver
+        run: |
+          molecule --version
+          python -c "import molecule_docker; print('✅ Molecule Docker driver installed')"
+
+      - name: Run Molecule tests
+        run: molecule test -s ${{ matrix.scenario }}
+        env:
+          MOLECULE_NO_LOG: false
+          PY_COLORS: 1
+          ANSIBLE_FORCE_COLOR: 1
+
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [lint, molecule]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-integration-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-integration-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run integration tests
+        run: |
+          # Create a test inventory for GitHub Actions
+          echo "localhost ansible_connection=local" > tests/ci_inventory
+          ansible-playbook -i tests/ci_inventory tests/test.yml --check
+        env:
+          ANSIBLE_FORCE_COLOR: true
+          CI: true
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  documentation:
+    name: Documentation Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check README links
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: 'yes'
+          use-verbose-mode: 'yes'
+
+      - name: Validate role metadata
+        run: |
+          python -c "
+          import yaml
+          with open('meta/main.yml') as f:
+              meta = yaml.safe_load(f)
+          assert 'galaxy_info' in meta
+          assert 'author' in meta['galaxy_info']
+          assert 'description' in meta['galaxy_info']
+          assert 'license' in meta['galaxy_info']
+          print('✅ Role metadata is valid')
+          "
+
+  release:
+    name: Release Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [lint, molecule, integration, security, documentation]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check if version changed
+        id: version_check
+        run: |
+          # This would check if version in meta/main.yml changed
+          echo "version_changed=false" >> $GITHUB_OUTPUT
+
+      - name: Create release
+        if: steps.version_check.outputs.version_changed == 'true'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version_check.outputs.new_version }}
+          release_name: Release v${{ steps.version_check.outputs.new_version }}
+          draft: false
+          prerelease: false

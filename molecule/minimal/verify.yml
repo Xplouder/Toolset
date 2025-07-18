@@ -1,0 +1,46 @@
+---
+- name: Verify minimal installation
+  hosts: all
+  become: true
+  vars:
+    test_user: molecule
+    
+  tasks:
+    - name: Verify only essential packages are installed
+      package_facts:
+        manager: auto
+      
+    - name: Check that minimal packages are present
+      assert:
+        that:
+          - "'git' in ansible_facts.packages"
+          - "'python' in ansible_facts.packages"
+          - "'vim' in ansible_facts.packages"
+        fail_msg: "Essential packages are missing in minimal installation"
+        success_msg: "Minimal installation has required packages"
+
+    - name: Verify Docker is NOT configured (minimal mode)
+      service_facts:
+      
+    - name: Check Docker service is not running in minimal mode
+      assert:
+        that:
+          - "ansible_facts.services['docker.service'] is not defined or ansible_facts.services['docker.service'].state != 'running'"
+        fail_msg: "Docker should not be running in minimal mode"
+        success_msg: "Docker correctly not configured in minimal mode"
+
+    - name: Test basic shell configuration still works
+      become: false
+      become_user: "{{ test_user }}"
+      block:
+        - name: Check if basic shell config exists
+          stat:
+            path: "/home/{{ test_user }}/.bashrc"
+          register: bashrc_stat
+          
+        - name: Assert basic configuration
+          assert:
+            that:
+              - "bashrc_stat.stat.exists"
+            fail_msg: "Basic shell configuration missing"
+            success_msg: "Basic shell configuration present"

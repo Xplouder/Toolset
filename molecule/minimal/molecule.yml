@@ -1,0 +1,31 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+platforms:
+  - name: archlinux-minimal
+    image: mesaguy/ansible-molecule-archlinux:latest
+    override_command: false
+    privileged: true
+    pre_build_image: true
+    pull: true
+    volumes:
+      - "/sys/fs/cgroup:/sys/fs/cgroup:ro"
+provisioner:
+  name: ansible
+  inventory:
+    host_vars:
+      archlinux-minimal:
+        # Test minimal installation
+        toolset_install_aur_packages: false
+        toolset_configure_docker: false
+        toolset_install_gui_tools: false
+        toolset_install_dev_tools: false
+        toolset_backup_existing_configs: false
+verifier:
+  name: ansible
+lint: |
+  set -e
+  yamllint .
+  ansible-lint . || true

@@ -1,0 +1,42 @@
+---
+- name: Integration tests for toolset role
+  hosts: localhost
+  connection: local
+  become: true
+  vars:
+    test_user: "{{ ansible_user_id }}"
+    
+  tasks:
+    - name: Test role with default configuration
+      block:
+        - name: Run toolset role
+          include_role:
+            name: "{{ playbook_dir | dirname | basename }}"
+          
+        - name: Verify installation results
+          include_tasks: verify_installation.yml
+          
+      rescue:
+        - name: Display error information
+          debug:
+            msg: "Integration test failed. Check the logs above for details."
+          failed_when: true
+
+    - name: Test role with custom configuration
+      block:
+        - name: Run toolset role with custom vars
+          include_role:
+            name: "{{ playbook_dir | dirname | basename }}"
+          vars:
+            toolset_install_aur_packages: false
+            toolset_configure_docker: true
+            toolset_backup_existing_configs: true
+            
+        - name: Verify custom configuration results
+          include_tasks: verify_custom_config.yml
+          
+      rescue:
+        - name: Display custom config test error
+          debug:
+            msg: "Custom configuration test failed."
+          failed_when: true

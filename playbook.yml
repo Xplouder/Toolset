@@ -1,0 +1,9 @@
+---
+- name: Setup development toolset
+  hosts: localhost
+  connection: local
+  become: true
+  tasks:
+    - name: Include toolset role
+      include_role:
+        name: "{{ playbook_dir | basename }}"
