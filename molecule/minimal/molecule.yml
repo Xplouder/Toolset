@@ -3,15 +3,25 @@ dependency:
   name: galaxy
 driver:
   name: docker
+  options:
+    managed: true
+    ansible_connection_options:
+      ansible_connection: docker
 platforms:
   - name: archlinux-minimal
-    image: mesaguy/ansible-molecule-archlinux:latest
+    image: archlinux:latest
     override_command: false
     privileged: true
     pre_build_image: true
     pull: true
     volumes:
       - "/sys/fs/cgroup:/sys/fs/cgroup:ro"
+    command: /usr/sbin/init
+    tmpfs:
+      - /run
+      - /tmp
+    capabilities:
+      - SYS_ADMIN
 provisioner:
   name: ansible
   inventory:

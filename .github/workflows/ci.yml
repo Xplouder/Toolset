@@ -81,7 +81,15 @@ jobs:
           python -c "import molecule_docker; print('✅ Molecule Docker driver installed')"
 
       - name: Run Molecule tests
-        run: molecule test -s ${{ matrix.scenario }}
+        run: |
+          # Set timeout and run molecule test
+          timeout 1800 molecule test -s ${{ matrix.scenario }} || {
+            echo "Molecule test failed or timed out"
+            echo "Cleaning up any remaining containers..."
+            docker ps -a
+            molecule destroy -s ${{ matrix.scenario }} || true
+            exit 1
+          }
         env:
           MOLECULE_NO_LOG: false
           PY_COLORS: 1

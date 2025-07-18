@@ -6,8 +6,16 @@
     test_user: molecule
 
   pre_tasks:
+    - name: Initialize pacman keyring
+      command: pacman-key --init
+      changed_when: false
+
+    - name: Populate pacman keyring
+      command: pacman-key --populate archlinux
+      changed_when: false
+
     - name: Update package database
-      command: pacman -Sy
+      command: pacman -Sy --noconfirm
       changed_when: false
 
     - name: Install base packages for testing
@@ -15,14 +23,44 @@
         name:
           - sudo
           - which
+          - systemd
+          - base-devel
+          - git
+          - python
         state: present
+
+    - name: Make sure we have a 'wheel' group
+      group:
+        name: wheel
+        state: present
+
+    - name: Allow 'wheel' group to have passwordless sudo
+      lineinfile:
+        dest: /etc/sudoers
+        state: present
+        regexp: '^%wheel'
+        line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
 
     - name: Create test user
       user:
         name: "{{ test_user }}"
+        groups: wheel
+        append: yes
         state: present
         createhome: yes
         shell: /bin/bash
+
+    - name: Set environment variables for test user
+      lineinfile:
+        path: "/home/{{ test_user }}/.bashrc"
+        line: "{{ item }}"
+        create: yes
+        owner: "{{ test_user }}"
+        group: "{{ test_user }}"
+      loop:
+        - "export USER={{ test_user }}"
+        - "export HOME=/home/{{ test_user }}"
 
   tasks:
     - name: Run toolset role with minimal configuration
@@ -33,3 +71,11 @@
         ansible_env:
           HOME: "/home/{{ test_user }}"
           USER: "{{ test_user }}"
+
+  post_tasks:
+    - name: Display minimal installation summary
+      debug:
+        msg: |
+          Minimal toolset installation completed.
+          Test user: {{ test_user }}
+          Configuration: Minimal packages only, no Docker/GUI tools

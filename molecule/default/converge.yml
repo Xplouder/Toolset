@@ -6,8 +6,16 @@
     test_user: molecule
 
   pre_tasks:
+    - name: Initialize pacman keyring
+      command: pacman-key --init
+      changed_when: false
+
+    - name: Populate pacman keyring
+      command: pacman-key --populate archlinux
+      changed_when: false
+
     - name: Update package database
-      command: pacman -Sy
+      command: pacman -Sy --noconfirm
       changed_when: false
 
     - name: Install base packages for testing
@@ -15,6 +23,10 @@
         name:
           - sudo
           - which
+          - systemd
+          - base-devel
+          - git
+          - python
         state: present
 
     - name: Make sure we have a 'wheel' group
