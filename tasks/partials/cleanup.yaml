@@ -1,5 +1,6 @@
 - name: Clean package cache
   ansible.builtin.shell: |
+    set -o pipefail
     cache_size_before=$(du -sh /var/cache/pacman/pkg/ | cut -f1)
     pacman -Sc --noconfirm
     cache_size_after=$(du -sh /var/cache/pacman/pkg/ | cut -f1)
@@ -8,13 +9,13 @@
   changed_when: true
 
 - name: Find orphaned packages
-  ansible.builtin.shell: pacman -Qtdq
+  ansible.builtin.command: pacman -Qtdq
   register: orphaned_packages
   failed_when: false
   changed_when: false
 
 - name: Remove orphaned packages
-  ansible.builtin.shell: pacman -Rns --noconfirm {{ orphaned_packages.stdout_lines | join(' ') }}
+  ansible.builtin.command: pacman -Rns --noconfirm {{ orphaned_packages.stdout_lines | join(' ') }}
   when: 
     - orphaned_packages.rc == 0
     - orphaned_packages.stdout_lines | length > 0

@@ -14,16 +14,19 @@
   when: yay_installed.rc != 0
 
 - name: Install yay AUR helper
+  when: yay_installed.rc != 0
   block:
     - name: Clone yay repository
       ansible.builtin.git:
         repo: https://aur.archlinux.org/yay-bin.git
         dest: /tmp/yay-bin
         force: yes
+        version: HEAD
       become: false
 
     - name: Build and install yay
       ansible.builtin.shell: |
+        set -o pipefail
         cd /tmp/yay-bin
         makepkg -si --noconfirm --needed
       become: false
@@ -35,5 +38,3 @@
         path: /tmp/yay-bin
         state: absent
       become: false
-
-  when: yay_installed.rc != 0
