@@ -1,5 +1,5 @@
 - name: Install Docker and Docker Compose
-  package:
+  ansible.builtin.package:
     name:
       - docker
       - docker-compose
@@ -29,7 +29,7 @@
   notify: docker_group_warning
 
 - name: Display Docker group warning
-  debug:
+  ansible.builtin.debug:
     msg: |
       WARNING: User '{{ ansible_user_id }}' has been added to the 'docker' group.
       This grants root-equivalent privileges. Please log out and back in for changes to take effect.

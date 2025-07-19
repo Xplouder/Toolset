@@ -1,12 +1,12 @@
 - name: Check if pip is available
-  command: python -m pip --version
+  ansible.builtin.command: python -m pip --version
   register: pip_check
   failed_when: false
   changed_when: false
   become: false
 
 - name: Install Python packages
-  pip:
+  ansible.builtin.pip:
     name: "{{ python_packages }}"
     state: present
     extra_args: --user

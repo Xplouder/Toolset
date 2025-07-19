@@ -1,12 +1,12 @@
 - name: Check if yay is already installed
-  command: which yay
+  ansible.builtin.command: which yay
   register: yay_installed
   failed_when: false
   changed_when: false
   become: false
 
 - name: Install yay dependencies
-  package:
+  ansible.builtin.package:
     name:
       - git
       - base-devel
@@ -16,14 +16,14 @@
 - name: Install yay AUR helper
   block:
     - name: Clone yay repository
-      git:
+      ansible.builtin.git:
         repo: https://aur.archlinux.org/yay-bin.git
         dest: /tmp/yay-bin
         force: yes
       become: false
 
     - name: Build and install yay
-      shell: |
+      ansible.builtin.shell: |
         cd /tmp/yay-bin
         makepkg -si --noconfirm --needed
       become: false
@@ -31,7 +31,7 @@
       changed_when: "'nothing to do' not in yay_build.stdout"
 
     - name: Clean up yay build directory
-      file:
+      ansible.builtin.file:
         path: /tmp/yay-bin
         state: absent
       become: false

@@ -1,5 +1,5 @@
 - name: Check if git is installed
-  command: which git
+  ansible.builtin.command: which git
   register: git_check
   failed_when: false
   changed_when: false

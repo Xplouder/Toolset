@@ -4,7 +4,7 @@
     current_user: "{{ ansible_user_id }}"
 
 - name: Create vim pack directory
-  file:
+  ansible.builtin.file:
     path: "{{ user_home }}/.vim/pack/default/start"
     state: directory
     owner: "{{ current_user }}"
@@ -21,12 +21,12 @@
   become: false
 
 - name: Check if .vimrc already exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ user_home }}/.vimrc"
   register: existing_vimrc
 
 - name: Backup existing .vimrc
-  copy:
+  ansible.builtin.copy:
     src: "{{ user_home }}/.vimrc"
     dest: "{{ user_home }}/.vimrc.backup.{{ ansible_date_time.epoch }}"
     remote_src: yes
@@ -39,7 +39,7 @@
   become: false
 
 - name: Install vim configuration
-  copy:
+  ansible.builtin.copy:
     src: files/.vimrc
     dest: "{{ user_home }}/.vimrc"
     owner: "{{ current_user }}"

@@ -4,12 +4,12 @@
     current_user: "{{ ansible_user_id }}"
 
 - name: Check if .zshrc already exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ user_home }}/.zshrc"
   register: existing_zshrc
 
 - name: Backup existing .zshrc
-  copy:
+  ansible.builtin.copy:
     src: "{{ user_home }}/.zshrc"
     dest: "{{ user_home }}/.zshrc.backup.{{ ansible_date_time.epoch }}"
     remote_src: yes
@@ -21,7 +21,7 @@
     - toolset_backup_existing_configs | bool
 
 - name: Install Oh My Zsh configuration
-  copy:
+  ansible.builtin.copy:
     src: files/.zshrc
     dest: "{{ user_home }}/.zshrc"
     owner: "{{ current_user }}"
