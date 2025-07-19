@@ -21,7 +21,7 @@
         repo: https://aur.archlinux.org/yay-bin.git
         dest: /tmp/yay-bin
         force: yes
-        version: HEAD
+        version: master
       become: false
 
     - name: Build and install yay
