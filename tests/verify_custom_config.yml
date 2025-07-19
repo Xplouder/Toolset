@@ -2,22 +2,22 @@
 - name: Verify Docker configuration when enabled
   block:
     - name: Check Docker service status
-      service_facts:
+      ansible.builtin.service_facts:
       
     - name: Verify Docker is running
-      assert:
+      ansible.builtin.assert:
         that:
           - "ansible_facts.services['docker.service'].state == 'running'"
         fail_msg: "Docker service should be running"
         success_msg: "Docker service is properly configured"
         
     - name: Check user is in docker group
-      command: groups {{ ansible_user_id }}
+      ansible.builtin.command: groups {{ ansible_user_id }}
       register: user_groups
       changed_when: false
       
     - name: Verify docker group membership
-      assert:
+      ansible.builtin.assert:
         that:
           - "'docker' in user_groups.stdout"
         fail_msg: "User should be in docker group"
@@ -26,11 +26,11 @@
 - name: Verify backup functionality
   block:
     - name: Check for backup files
-      find:
+      ansible.builtin.find:
         paths: "{{ ansible_env.HOME }}"
         patterns: "*.backup.*"
       register: backup_files
       
     - name: Display backup information
-      debug:
+      ansible.builtin.debug:
         msg: "Found {{ backup_files.files | length }} backup files"

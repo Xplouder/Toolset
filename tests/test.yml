@@ -6,7 +6,7 @@
   
   pre_tasks:
     - name: Ensure test environment is ready
-      debug:
+      ansible.builtin.debug:
         msg: |
           Starting toolset role tests
           User: {{ ansible_user_id }}
@@ -15,7 +15,7 @@
 
   tasks:
     - name: Include toolset role
-      include_role:
+      ansible.builtin.include_role:
         name: "{{ playbook_dir | dirname | basename }}"
       vars:
         # Test with safe defaults
@@ -25,8 +25,8 @@
 
   post_tasks:
     - name: Run verification tests
-      include_tasks: verify_installation.yml
+      ansible.builtin.include_tasks: verify_installation.yml
       
     - name: Test summary
-      debug:
+      ansible.builtin.debug:
         msg: "Toolset role test completed successfully"
