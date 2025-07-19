@@ -1,0 +1,47 @@
+---
+- name: Verify core packages are installed
+  ansible.builtin.package_facts:
+    manager: auto
+
+- name: Check essential development tools
+  ansible.builtin.assert:
+    that:
+      - "'git' in ansible_facts.packages"
+      - "'python' in ansible_facts.packages"
+      - "'vim' in ansible_facts.packages"
+    fail_msg: "Essential development packages missing"
+    success_msg: "Core development tools verified"
+
+- name: Test command availability
+  ansible.builtin.command: "{{ item }} --version"
+  register: cmd_results
+  changed_when: false
+  failed_when: false
+  loop:
+    - git
+    - python
+    - vim
+
+- name: Verify commands are working
+  ansible.builtin.assert:
+    that:
+      - "item.rc == 0"
+    fail_msg: "Command {{ item.item }} is not working"
+    success_msg: "Command {{ item.item }} is functional"
+  loop: "{{ cmd_results.results }}"
+
+- name: Check dotfiles exist
+  ansible.builtin.stat:
+    path: "{{ ansible_env.HOME }}/{{ item }}"
+  register: dotfile_check
+  loop:
+    - .vimrc
+    - .bashrc
+
+- name: Verify dotfiles are installed
+  ansible.builtin.assert:
+    that:
+      - "item.stat.exists"
+    fail_msg: "Dotfile {{ item.item }} is missing"
+    success_msg: "Dotfile {{ item.item }} is present"
+  loop: "{{ dotfile_check.results }}"

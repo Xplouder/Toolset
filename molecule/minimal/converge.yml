@@ -1,5 +1,5 @@
 ---
-- name: Converge
+- name: Converge - Minimal Installation
   hosts: all
   become: true
   vars:
@@ -70,7 +70,7 @@
         - "export HOME=/home/{{ test_user }}"
 
   tasks:
-    - name: Run toolset role
+    - name: Run toolset role with minimal configuration
       include_role:
         name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
       vars:
@@ -80,10 +80,9 @@
           USER: "{{ test_user }}"
 
   post_tasks:
-    - name: Display role execution summary
+    - name: Display minimal installation summary
       debug:
         msg: |
-          Toolset role execution completed for testing.
+          Minimal toolset installation completed.
           Test user: {{ test_user }}
-          Home directory: /home/{{ test_user }}
-          Next step: verification tests
+          Configuration: Minimal packages only, no Docker/GUI tools

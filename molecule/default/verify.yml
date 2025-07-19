@@ -1,0 +1,205 @@
+---
+- name: Verify toolset installation
+  hosts: all
+  become: true
+  vars:
+    test_user: molecule
+    
+  tasks:
+    - name: Verify essential packages are installed
+      package_facts:
+        manager: auto
+      
+    - name: Check core development tools
+      assert:
+        that:
+          - "'git' in ansible_facts.packages"
+          - "'python' in ansible_facts.packages"
+          - "'vim' in ansible_facts.packages"
+          - "'docker' in ansible_facts.packages"
+        fail_msg: "Essential development packages are missing"
+        success_msg: "Core development tools are installed"
+
+    - name: Verify Docker service is running
+      service_facts:
+      
+    - name: Check Docker service status
+      assert:
+        that:
+          - "ansible_facts.services['docker.service'].state == 'running'"
+          - "ansible_facts.services['docker.service'].status == 'enabled'"
+        fail_msg: "Docker service is not running or enabled"
+        success_msg: "Docker service is properly configured"
+
+    - name: Check if test user is in docker group
+      getent:
+        database: group
+        key: docker
+      register: docker_group
+      
+    - name: Verify user docker group membership
+      assert:
+        that:
+          - "test_user in docker_group.ansible_facts.getent_group.docker[2].split(',')"
+        fail_msg: "Test user is not in docker group"
+        success_msg: "User properly added to docker group"
+
+    - name: Test Git functionality
+      become: false
+      become_user: "{{ test_user }}"
+      block:
+        - name: Check git version
+          command: git --version
+          register: git_version
+          changed_when: false
+          
+        - name: Verify git aliases are configured
+          command: git config --global alias.st
+          register: git_alias_check
+          changed_when: false
+          failed_when: false
+          
+        - name: Assert git configuration
+          assert:
+            that:
+              - "git_version.rc == 0"
+              - "'git version' in git_version.stdout"
+              - "git_alias_check.rc == 0"
+            fail_msg: "Git is not properly configured"
+            success_msg: "Git is working and configured"
+
+    - name: Test Python functionality
+      become: false
+      become_user: "{{ test_user }}"
+      block:
+        - name: Check Python version
+          command: python --version
+          register: python_version
+          changed_when: false
+          
+        - name: Check pip functionality
+          command: python -m pip --version
+          register: pip_version
+          changed_when: false
+          
+        - name: Assert Python setup
+          assert:
+            that:
+              - "python_version.rc == 0"
+              - "pip_version.rc == 0"
+              - "'Python' in python_version.stdout"
+            fail_msg: "Python is not properly installed"
+            success_msg: "Python environment is working"
+
+    - name: Test Vim configuration
+      become: false
+      become_user: "{{ test_user }}"
+      block:
+        - name: Check if vim config exists
+          stat:
+            path: "/home/{{ test_user }}/.vimrc"
+          register: vimrc_stat
+          
+        - name: Check if gruvbox theme is installed
+          stat:
+            path: "/home/{{ test_user }}/.vim/pack/default/start/gruvbox"
+          register: gruvbox_stat
+          
+        - name: Assert Vim configuration
+          assert:
+            that:
+              - "vimrc_stat.stat.exists"
+              - "gruvbox_stat.stat.exists"
+              - "gruvbox_stat.stat.isdir"
+            fail_msg: "Vim is not properly configured"
+            success_msg: "Vim configuration is complete"
+
+    - name: Test shell configuration
+      become: false
+      become_user: "{{ test_user }}"
+      block:
+        - name: Check if zsh config exists
+          stat:
+            path: "/home/{{ test_user }}/.zshrc"
+          register: zshrc_stat
+          
+        - name: Check if bash config exists
+          stat:
+            path: "/home/{{ test_user }}/.bashrc"
+          register: bashrc_stat
+          
+        - name: Assert shell configuration
+          assert:
+            that:
+              - "zshrc_stat.stat.exists"
+              - "bashrc_stat.stat.exists"
+            fail_msg: "Shell configurations are missing"
+            success_msg: "Shell configurations are installed"
+
+    - name: Test system settings
+      block:
+        - name: Check swappiness setting
+          command: sysctl vm.swappiness
+          register: swappiness_check
+          changed_when: false
+          
+        - name: Assert system settings
+          assert:
+            that:
+              - "'vm.swappiness = 15' in swappiness_check.stdout"
+            fail_msg: "System settings not applied correctly"
+            success_msg: "System settings are configured"
+
+    - name: Verify file permissions and ownership
+      become: false
+      become_user: "{{ test_user }}"
+      block:
+        - name: Check dotfile ownership
+          stat:
+            path: "/home/{{ test_user }}/{{ item }}"
+          register: dotfile_stats
+          loop:
+            - .vimrc
+            - .zshrc
+            - .bashrc
+            
+        - name: Assert proper file ownership
+          assert:
+            that:
+              - "item.stat.pw_name == test_user"
+              - "item.stat.gr_name == test_user"
+            fail_msg: "Dotfiles have incorrect ownership"
+            success_msg: "Dotfiles have correct ownership"
+          loop: "{{ dotfile_stats.results }}"
+          when: item.stat.exists
+
+    - name: Test Docker functionality (basic)
+      become: false
+      become_user: "{{ test_user }}"
+      block:
+        - name: Test Docker command access
+          command: docker --version
+          register: docker_version
+          changed_when: false
+          
+        - name: Assert Docker access
+          assert:
+            that:
+              - "docker_version.rc == 0"
+              - "'Docker version' in docker_version.stdout"
+            fail_msg: "Docker is not accessible to user"
+            success_msg: "Docker is properly accessible"
+
+    - name: Summary of verification results
+      debug:
+        msg: |
+          Toolset verification completed successfully:
+          ✓ Core packages installed and working
+          ✓ Docker service running and user configured
+          ✓ Git configured with aliases
+          ✓ Python and pip working
+          ✓ Vim configured with gruvbox theme
+          ✓ Shell configurations installed
+          ✓ System settings applied
+          ✓ File permissions correct
+          ✓ Docker accessible to user

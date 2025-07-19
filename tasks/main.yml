@@ -1,12 +1,47 @@
-- include_tasks: "{{ item }}"
-  loop:
-    - partials/sublime.yaml
-    - partials/docker.yaml
-    - partials/yay.yaml
-    - partials/os_packages.yaml
-    - partials/python_packages.yaml
-    - partials/oh-my-zsh.yaml
-    - partials/vim_customizations.yaml
-    - partials/os_settings.yaml
-    - partials/cleanup.yaml
-    - partials/git_customizations.yaml
+- name: Check if distribution is supported
+  ansible.builtin.fail:
+    msg: "This role only supports: {{ toolset_supported_distributions | join(', ') }}. Current distribution: {{ ansible_distribution }}"
+  when: ansible_distribution not in toolset_supported_distributions
+
+- name: Ensure yay AUR helper is available
+  ansible.builtin.import_tasks: partials/yay.yaml
+  tags: aur
+
+- name: Install OS packages
+  ansible.builtin.import_tasks: partials/os_packages.yaml
+  tags: packages
+
+- name: Install Python packages
+  ansible.builtin.import_tasks: partials/python_packages.yaml
+  tags: python
+  when: toolset_install_dev_tools | bool
+
+- name: Configure Docker
+  ansible.builtin.import_tasks: partials/docker.yaml
+  tags: docker
+  when: toolset_configure_docker | bool
+
+- name: Install and configure Sublime Text
+  ansible.builtin.import_tasks: partials/sublime.yaml
+  tags: sublime
+  when: toolset_install_gui_tools | bool
+
+- name: Configure Oh My Zsh
+  ansible.builtin.import_tasks: partials/oh-my-zsh.yaml
+  tags: zsh
+
+- name: Configure Vim
+  ansible.builtin.import_tasks: partials/vim_customizations.yaml
+  tags: vim
+
+- name: Apply OS settings
+  ansible.builtin.import_tasks: partials/os_settings.yaml
+  tags: settings
+
+- name: Configure Git
+  ansible.builtin.import_tasks: partials/git_customizations.yaml
+  tags: git
+
+- name: Cleanup temporary files
+  ansible.builtin.import_tasks: partials/cleanup.yaml
+  tags: cleanup

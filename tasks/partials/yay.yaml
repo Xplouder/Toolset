@@ -1,12 +1,40 @@
-- name: install YAY (1/2)
-  command: pacman -Sy --noconfirm --needed git base-devel
+- name: Check if yay is already installed
+  ansible.builtin.command: which yay
+  register: yay_installed
+  failed_when: false
   changed_when: false
-
-- name: install YAY (2/2)
   become: false
-  ansible.builtin.shell: |
-    git clone https://aur.archlinux.org/yay-bin.git /tmp/yay-bin
-    cd /tmp/yay-bin
-    makepkg -si --noconfirm
-    rm -rf /tmp/yay-bin
-  changed_when: false
+
+- name: Install yay dependencies
+  ansible.builtin.package:
+    name:
+      - git
+      - base-devel
+    state: present
+  when: yay_installed.rc != 0
+
+- name: Install yay AUR helper
+  when: yay_installed.rc != 0
+  block:
+    - name: Clone yay repository
+      ansible.builtin.git:
+        repo: https://aur.archlinux.org/yay-bin.git
+        dest: /tmp/yay-bin
+        force: yes
+        version: master
+      become: false
+
+    - name: Build and install yay
+      ansible.builtin.shell: |
+        set -o pipefail
+        cd /tmp/yay-bin
+        makepkg -si --noconfirm --needed
+      become: false
+      register: yay_build
+      changed_when: "'nothing to do' not in yay_build.stdout"
+
+    - name: Clean up yay build directory
+      ansible.builtin.file:
+        path: /tmp/yay-bin
+        state: absent
+      become: false

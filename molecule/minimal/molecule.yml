@@ -4,7 +4,7 @@ dependency:
 driver:
   name: docker
 platforms:
-  - name: archlinux
+  - name: archlinux-minimal
     image: archlinux:latest
     privileged: true
     pre_build_image: true
@@ -14,21 +14,17 @@ platforms:
     cgroupns_mode: host
     command: /sbin/init
     env:
-      ANSIBLE_USER: molecule
-      HOME: /home/molecule
       container: docker
 provisioner:
   name: ansible
-  config_options:
-    defaults:
-      callbacks_enabled: profile_tasks
   inventory:
     host_vars:
-      archlinux:
-        # Test with minimal configuration
+      archlinux-minimal:
+        # Test minimal installation
         toolset_install_aur_packages: false
-        toolset_configure_docker: true
+        toolset_configure_docker: false
         toolset_install_gui_tools: false
+        toolset_install_dev_tools: false
         toolset_backup_existing_configs: false
 verifier:
   name: ansible
